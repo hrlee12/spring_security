@@ -1,5 +1,15 @@
 package com.cos.security1.controller;
 
+import java.security.Principal;
+import java.util.Collection;
+import java.util.Iterator;
+
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +38,25 @@ public class IndexController {
 	@GetMapping("/user")
 	@ResponseBody
 	public String user() {
+
+		SecurityContext context = SecurityContextHolder.getContext();
+
+		// 인증 객체를 얻습니다.
+		Authentication authentication = context.getAuthentication();
+
+		// 로그인한 사용자정보를 가진 객체를 얻습니다.
+		// Principal principal = authentication.getPrincipal();
+
+		// 사용자가  가진 모든 롤 정보를 얻습니다.
+		Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+
+		Iterator<? extends GrantedAuthority> iter = authorities.iterator();
+		System.out.println("hi");
+		while (iter.hasNext()) {
+			GrantedAuthority auth = iter.next();
+			System.out.println(auth.getAuthority());
+		}
+			출처: https://offbyone.tistory.com/217 [쉬고 싶은 개발자:티스토리]
 		return "user";
 	}
 
@@ -62,6 +91,14 @@ public class IndexController {
 		user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 		userRepository.save(user);	// 회원가입
 		return "redirect:/loginForm";
+	}
+
+	// secure는 한개만 걸 수 있고 preauthorize는 여러개 걸 수 있음.
+	// @Secured("ROLE_ADMIN")
+
+	@GetMapping("/data")
+	public @ResponseBody String info() {
+		return "개인정보";
 	}
 
 }
